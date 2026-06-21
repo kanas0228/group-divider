@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グループ分け</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+        }
+        body {
+            font-family: sans-serif;
+            background-color: #f4f7f6;
+            color: #333333;
+            box-sizing: border-box;
+            padding: 15px;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            text-align: center;
+            color: #4a6fa5;
+            margin: 0 0 15px 0;
+            font-size: 1.5rem;
+        }
+        
+        .grid-layout {
+            display: flex;
+            gap: 15px;
+            flex-grow: 1;
+            height: calc(100% - 50px);
+        }
+        
+        .left-side {
+            width: 280px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .right-side {
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+            box-sizing: border-box;
+        }
+        .right-side .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        h2 {
+            font-size: 1.05rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #4a6fa5;
+            color: #4a6fa5;
+        }
+        
+        .member-list {
+            height: 260px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 6px;
+            background: #fafafa;
+        }
+        .member-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: #e0e7ff;
+            color: #1e3a8a;
+            border: 2px solid #c7d2fe;
+            padding: 6px 10px;
+            margin-bottom: 4px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        .member-btn.excluded {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border-color: #cbd5e1;
+            text-decoration: line-through;
+            font-weight: normal;
+        }
+        
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+        }
+        .submit-btn {
+            width: 100%;
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        /* 結果表示エリア */
+        .results-flex {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            overflow-y: auto;
+            height: 100%;
+            align-content: flex-start;
+        }
+        
+        .group-card {
+            background: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-sizing: border-box;
+            width: calc(50% - 5px); 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 1000px) {
+            .results-flex.medium-groups .group-card {
+                width: calc(33.33% - 7px);
+            }
+            .results-flex.many-groups .group-card {
+                width: calc(25% - 8px);
+                padding: 8px;
+            }
+        }
+        
+        .group-title {
+            font-weight: bold;
+            font-size: 1.05rem;
+            color: #4a6fa5;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .desk-layout {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .seat-box {
+            border: 2px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 8px 4px;
+            text-align: center;
+            background: #ffffff;
+            width: calc(50% - 3px); 
+            box-sizing: border-box;
+            min-height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .seat-box.empty {
+            background: #f1f5f9;
+            border: 2px dashed #e2e8f0;
+        }
+        .seat-name {
+            font-weight: bold;
+            color: #1e293b;
+            font-size: 0.9rem;
+            white-space: nowrap; 
+        }
+        .seat-box.empty .seat-name {
+            color: #cbd5e1;
+            font-weight: normal;
+            font-size: 0.8rem;
+        }
+        .stats {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>グループ分け</h1>
+    
+    <div class="grid-layout">
+        <div class="left-side">
+            <div class="card">
+                <h2>1. 対象メンバー選択</h2>
+                <div class="stats" id="member-count">対象人数: 19人</div>
+                <div class="member-list" id="memberListContainer"></div>
+            </div>
+            
+            <div class="card">
+                <h2>2. 条件設定</h2>
+                <div class="form-group">
+                    <label>グループ数 (2〜10個)</label>
+                    <input type="number" id="groupCount" min="2" max="10" value="4">
+                </div>
+                <button class="submit-btn" onclick="divideGroups()">実行</button>
+            </div>
+        </div>
+        
+        <div class="right-side">
+            <div class="card">
+                <h2>3. 座席配置マップ</h2>
+                <div id="resultContainer" class="results-flex">
+                    <p style="color:#999; text-align:center; width: 100%; margin-top: 100px;">メンバーを選んで「実行」を押してください。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 19名の最新名簿
+    const initialMembers = [
+        "花上貴仁", "小山 美優", "小林 美月", "島田優", "樋口 悠斗", 
+        "渡辺敬太", "岡本 梨歩", "塚田理央", "持田菜々美", "大槻亮介", 
+        "小宮杏菜", "土田 昊士", "齋藤花菜", "滝口 貴斗", "袴田 宗吾", 
+        "松本莉香", "小勝綾奈", "勝浦 竜青", "杉山 空輝"
+    ];
+
+    // 各メンバーの選択状態（true = 対象, false = 除外）を管理するシンプルな配列
+    const memberStates = [];
+
+    function init() {
+        const container = document.getElementById('memberListContainer');
+        container.innerHTML = '';
+        memberStates.length = 0; // 配列をリセット
+        
+        for (let i = 0; i < initialMembers.length; i++) {
+            memberStates.push(true); // 初期状態は全員「対象」
+            
+            const btn = document.createElement('button');
+            btn.className = 'member-btn';
+            btn.textContent = "✓ " + initialMembers[i];
+            btn.id = 'mbr-idx-' + i;
+            
+            btn.onclick = (function(index, name) {
+                return function() {
+                    // 状態を反転
+                    memberStates[index] = !memberStates[index];
+                    
+                    if (memberStates[index]) {
+                        this.className = 'member-btn';
+                        this.textContent = "✓ " + name;
+                    } else {
+                        this.className = 'member-btn excluded';
+                        this.textContent = "  " + name;
+                    }
+                    updateActiveCount();
+                };
+            })(i, initialMembers[i]);
+
+            container.appendChild(btn);
+        }
+        updateActiveCount();
+    }
+
+    // 選択人数の集計ロジックを極めてシンプルに修正（バグ回避）
+    function updateActiveCount() {
+        let count = 0;
+        for (let i = 0; i < memberStates.length; i++) {
+            if (memberStates[i]) count++;
+        }
+        document.getElementById('member-count').textContent = "対象人数: " + count + "人";
+    }
+
+    function getSelectedMembers() {
+        const selected = [];
+        for (let i = 0; i < initialMembers.length; i++) {
+            if (memberStates[i]) {
+                selected.push(initialMembers[i]);
+            }
+        }
+        return selected;
+    }
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function divideGroups() {
+        const members = getSelectedMembers();
+        if (members.length === 0) {
+            alert('対象メンバーが誰も選択されていません。');
+            return;
+        }
+
+        let numGroups = parseInt(document.getElementById('groupCount').value, 10);
+        if (!numGroups || numGroups < 2 || numGroups > 10) {
+            alert('グループ数は2から10の間で指定してください。');
+            return;
+        }
+
+        if (numGroups > members.length) {
+            numGroups = members.length;
+        }
+
+        const shuffledMembers = shuffle([].concat(members));
+        const groups = [];
+        for (let i = 0; i < numGroups; i++) {
+            groups.push([]);
+        }
+        for (let i = 0; i < shuffledMembers.length; i++) {
+            groups[i % numGroups].push(shuffledMembers[i]);
+        }
+
+        const container = document.getElementById('resultContainer');
+        container.innerHTML = '';
+
+        if (numGroups >= 7) {
+            container.className = "results-flex many-groups"; 
+        } else if (numGroups >= 4) {
+            container.className = "results-flex medium-groups"; 
+        } else {
+            container.className = "results-flex"; 
+        }
+
+        const groupNames = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+
+        for (let gIndex = 0; gIndex < groups.length; gIndex++) {
+            const group = groups[gIndex];
+            const seatedGroup = shuffle([].concat(group));
+            
+            const groupCard = document.createElement('div');
+            groupCard.className = 'group-card';
+            
+            const title = document.createElement('div');
+            title.className = 'group-title';
+            title.textContent = "グループ " + (groupNames[gIndex] || (gIndex + 1)) + " (" + group.length + "名)";
+            groupCard.appendChild(title);
+
+            const deskLayout = document.createElement('div');
+            deskLayout.className = 'desk-layout';
+
+            const totalSeatsToShow = Math.ceil(seatedGroup.length / 2) * 2;
+            const limit = Math.max(totalSeatsToShow, 2);
+
+            for (let sIndex = 0; sIndex < limit; sIndex++) {
+                const seatBox = document.createElement('div');
+                const seatName = document.createElement('span');
+                seatName.className = 'seat-name';
+
+                if (sIndex < seatedGroup.length) {
+                    seatBox.className = 'seat-box';
+                    seatName.textContent = seatedGroup[sIndex];
+                } else {
+                    seatBox.className = 'seat-box empty';
+                    seatName.textContent = "（空席）";
+                }
+
+                seatBox.appendChild(seatName);
+                deskLayout.appendChild(seatBox);
+            }
+
+            groupCard.appendChild(deskLayout);
+            container.appendChild(groupCard);
+        }
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
